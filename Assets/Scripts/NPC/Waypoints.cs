@@ -15,11 +15,14 @@ public class Waypoints : MonoBehaviour
         }
 
         Gizmos.color = Color.red;
+
+
         for (int i = 0; i < transform.childCount - 1; i++)
         {
-            Gizmos.DrawLine(transform.GetChild(i).position, transform.GetChild(i + 1).position);
+            for (int j = i + 1; j < transform.childCount; j++)
+            {
+                Gizmos.DrawLine(transform.GetChild(i).position, transform.GetChild(j).position);
+            }
         }
-
-        Gizmos.DrawLine(transform.GetChild(transform.childCount - 1).position, transform.GetChild(0).position);
     }
 }
