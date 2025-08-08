@@ -1,12 +1,17 @@
 using System.Collections;
+using UnityEngine.UI;
 using UnityEngine;
 
 public class WaypointMover : MonoBehaviour
 {
-  
+
+    [SerializeField] private Vector3 sliderOffset = new Vector3(0, 0.8f, 0);
+
     [Header("Waypoints")]
     public GameObject[] waypoints;
 
+    public Slider cooldownSlider;
+    
     public float minDistance = 1f;
     public float speed = 1f;
     public float rotationSpeed = 180f; // degrees per second
@@ -28,9 +33,9 @@ public class WaypointMover : MonoBehaviour
         }
         else
         {
-            RotateTowardsTarget(waypoints[_currentIndex].transform);
+            RotateTowardsTarget(waypoints[_currentIndex].transform); // Rotate towards the current waypoint
 
-            transform.position = Vector2.MoveTowards(transform.position, waypoints[_currentIndex].transform.position, speed * Time.deltaTime);
+            transform.position = Vector2.MoveTowards(transform.position, waypoints[_currentIndex].transform.position, speed * Time.deltaTime); // Move towards the current waypoint
 
             if (Vector2.Distance(transform.position, waypoints[_currentIndex].transform.position) < 0.01f)
             {
@@ -39,11 +44,32 @@ public class WaypointMover : MonoBehaviour
         }
     }
 
+    private void LateUpdate()
+    {
+        if (cooldownSlider.gameObject.activeSelf)
+        {
+            cooldownSlider.transform.position = transform.position + sliderOffset;
+            cooldownSlider.transform.rotation = Quaternion.identity;
+        }
+    }
+
     private IEnumerator WaitAndChooseNext()
     {
         _isWaiting = true;
+        cooldownSlider.value = 0f;
+        cooldownSlider.gameObject.SetActive(true);
+        cooldownSlider.maxValue = timeToWait;
 
-        yield return new WaitForSeconds(timeToWait);
+        float elapsedTime = 0f;
+
+        while (elapsedTime < timeToWait)
+        {
+            elapsedTime += Time.deltaTime;
+            cooldownSlider.value = elapsedTime;
+            yield return null; // Wait for the next frame
+        }
+
+        cooldownSlider.gameObject.SetActive(false);
 
         int newIndex;
         do
